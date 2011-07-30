@@ -6,9 +6,9 @@ In an attempt to find a more realistic coding dojo kata than the usual game or a
 
 The kata chosen was an implementation of the Circuit Breaker design pattern. The hope was that this (like the [refreshing cache excercise](http://www.meetup.com/OsloCodingDojo/events/16086309/) from January) smacked more of a 'real' problem, and that the end result and the new knowledge gained through the kata could be of direct use in everyday professional work.
 
-For an iterative implementation breakdown of requirements (an improvement of the kata discovered during the coding dojo retrospective), see the *documentation* directory. For more information about the kata (and the design pattern) itself, read on.
+For an iterative implementation breakdown of requirements (an improvement of the kata discovered during the coding dojo retrospective), see the kata instructions. For more background on the design pattern, read on.
 
-# The Circuit Breaker Kata
+# The Circuit Breaker Design Pattern
 
 The kata consists of implementing an adapted version of the Circuit Breaker pattern, presented in its original form by *Michael T. Nygard* in the book [Release It!](http://pragprog.com/book/mnee/release-it). The version used for the kata was presented by Avdi Grimm as a mitigation strategy for the problem of failure cascades.
 
