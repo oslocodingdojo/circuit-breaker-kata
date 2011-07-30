@@ -14,20 +14,17 @@ The kata consists of implementing an adapted version of the Circuit Breaker patt
 
 ## Cascading Failure
 
-In the Pragmatic Bookshelf Podcast of June 2011, Avdi Grimm recounts to Miles Forrest a story of failure handling gone bad.
+In the [Pragmatic Bookshelf Podcast of June 2011](http://pragprog.com/podcasts/show/37), Avdi Grimm recounts to Miles Forrest a story of failure handling gone bad.
 
-He was working on a distributed system, where worker processes and other services performing unrelated tasks were communicating with one another through the use of queues. Workers would process jobs from a queue, and occasionally a job would fail.
+He was working on a distributed system of worker processes and other services communicating with one another using queues. Workers would process jobs from a queue, and occasionally a job would fail.
 
-The team had rolled their own exception notification system, doing the simplest thing that could possibly work; a code snippet which would catch the exceptions and email the entire dev team a notification using a shared GMail account.
+The team had rolled their own exception notification system; a code snippet which would catch the exceptions and send an email notification to the entire dev team using a shared GMail account.
 
-One day they rolled out a new release which caused a great deal more of the jobs to fail. The jobs were failing, and consequently emailing the dev team with exception notifications. In fact, they failed so often that GMail started throttling the account. This resulted in SMTP exceptions being thrown when exception notifications for the job failures were being dispatched.
+One day they rolled out a new release which caused a great deal more of the jobs to fail. Failing jobs caused workers to email the dev team with exception notifications, and the rate of failure notifications caused GMail to start throttling the account. This in turn caused SMTP exceptions when sending exception notifications. But the notification code had never been written to handle SMTP exceptions, so this in turn caused the workers to crash. Instead of reporting job failures, the workers were now just crashing and staying dead.
 
-But the code that reported the exceptions had never been written to handle SMTP exceptions, so it in turn caused the worker to crash. So instead of reporting failures, the workers were now just crashing and staying dead.
+While the crashing of workers was bad enough, the problems at hand were even worse. The same GMail account was being used by other, unrelated systems, for various notifications. These systems now started receiving SMTP exceptions because of the throttling and started crashing as well. 
 
-But it doesn't stop there. While the crashing of workers was bad enough, the actual problem was worse than that. The same GMail account was being used for various notifications, not just this worker notification system. So other, unrelated systems, who were also using the same GMail account for sending emails, also started getting SMTP exceptions because of the throttling. So these unrelated systems were crashing as well. So as a result of some error reporting code that wasn't sufficiently robust in the face of exceptions itself, they had all of their systems go down. Even the ones unrelated to the job processing.
-
-And that is a classic example of a cascading failure scenario. 
-
+As a result of a bit of error reporting code that wasn't sufficiently robust in the face of exceptions itself, they had all of their systems go down. Even the ones unrelated to the job processing -- a classic example of a cascading failure scenario. 
 
 ## Circuit Breaker
 
