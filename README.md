@@ -14,6 +14,23 @@ The kata consists of implementing an adapted version of the Circuit Breaker patt
 
 ## Cascading Failure
 
+In his book, Michael Nygard describes the concept of cascading failure as follows:
+
+> System failures start with a crack. That crack comes from some fundamental problem. 
+> Various mechanisms can retard or stop the crack, which are the topics of the next chapter. 
+> Absent those mechanisms, the crack can progress and even be ampliﬁed by some structural problems.
+> A cascading failure occurs when a crack in one layer triggers a crack in a calling layer.
+
+> Cascading failures require some mechanism to transmit the failure from one layer to another. 
+> The failure “jumps the gap” when bad behavior in the calling layer gets triggered by the 
+> failure condition in the called layer. 
+
+> Just as integration points are the number-one source of cracks, cascading failures are the 
+> number-one crack accelerator. Preventing cascading failures is the very key to resilience. 
+> The most effective patterns to combat cascading failures are Circuit Breaker and Timeouts.
+
+### An Example Failure Cascade
+
 In the [Pragmatic Bookshelf Podcast of June 2011](http://pragprog.com/podcasts/show/37), Avdi Grimm recounts to Miles Forrest a story of failure handling gone bad.
 
 He was working on a distributed system of worker processes and other services communicating with one another using queues. Workers would process jobs from a queue, and occasionally a job would fail.
@@ -28,10 +45,51 @@ As a result of a bit of error reporting code that wasn't sufficiently robust in 
 
 ## Circuit Breaker
 
-The Circuit Breaker pattern is presented in the book [Release It!](http://pragprog.com/book/mnee/release-it) by Michael T. Nygard. The following description, however, is based on online resources rather than the original source. See the list of references for details.
+Circuit breakers are a way to automatically degrade functionality when the system is under stress. 
 
-The Circuit Breaker pattern serves two purposes:
+In [Release It!](http://pragprog.com/book/mnee/release-it), the description of the Circuit Breaker design pattern is based on its electrical namesake, the successor of the residential fuse. 
 
-* Primarily, it protects clients from slow or broken services
-* Secondarily, it protects services from demand in excess of capacity
+> Now, circuit breakers protect overeager gadget hounds from burning their houses down. 
+> The principle is the same: detect excess usage, fail first, and open the circuit. 
+> More abstractly, the circuit breaker exists to allow one subsystem (an electrical circuit) 
+> to fail (excessive current draw, possibly from a short-circuit) without destroying 
+> the entire system (the house). Furthermore, once the danger has passed, the circuit
+> breaker can be reset to restore full function to the system.
 
+> You can apply the same technique to software by wrapping dangerous operations with a 
+> component that can circumvent calls when the system is not healthy. This differs from retries, 
+> in that circuit breakers exist to prevent operations rather than reexecute them.
+
+### States
+
+The circuit breaker is typically implemented as a wrapper or proxy component with different behaviour depending on its internal state. The standard version has three states: Closed, Open and Half-open.
+
+#### Closed
+
+> In the normal “closed” state, the circuit breaker executes operations as usual. 
+> These can be calls out to another system, or they can be internal operations that 
+> are subject to timeout or other execution failure. If the call succeeds, nothing 
+> extraordinary happens. If it fails, however, the circuit breaker makes a note of 
+> the failure. Once the number of failures (or frequency of failures, in more sophisticated
+> cases) exceeds a threshold, the circuit breaker trips and “opens” the circuit.
+
+#### Open
+> When the circuit is “open,” calls to the circuit breaker fail immediately, 
+> without any attempt to execute the real operation. After a suitable amount of time,
+> the circuit breaker decides that the operation has a chance of succeeding, 
+> so it goes into the “half-open” state. 
+
+#### Half-open
+> In this state, the next call to the circuit breaker is allowed to execute the 
+> dangerous operation. Should the call succeed, the circuit breaker resets and 
+> returns to the “closed” state, ready for more routine operation. If this trial 
+> call fails, however, the circuit breaker returns to the “open” state until another
+> timeout elapses.
+
+Since all calls fail when the circuit breaker is open, it is recommended that this be indicated by a specific type of exception. This allows the calling code to handle this type of exception differently.
+
+## Kata Requirements
+
+Instead of preparing a complete set of requirements for the kata, a progression of iterations is specified, where the Circuit Breaker pattern is incrementally specified and expanded.
+
+Implementations will most likely vary quite significantly depending on the programming language used. If a requirement does not make sense for a specific language; skip it.
